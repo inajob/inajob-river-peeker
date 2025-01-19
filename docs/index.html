@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Discordサーバー「inajob川」</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta property="og:title" content="Discordサーバー「inajob川」">
+    <meta property="og:description" content="inajob川はinajobを中心としたコミュニケーションをする場です。">
+    <meta property="og:image" content="https://inajob.github.io/inajob-river-peeker/imgs/cover.jpg">
+    <meta property="og:url" content="https://inajob.github.io/inajob-river-peeker/index.html">
+    <meta property="og:type" content="website">
+
+    <style>
+        body{
+            background-color: #ddd;
+        }
+        div.box {
+            background-color: #fff;
+            padding:1em;
+            margin:0.2em;
+            border-radius: 1em;
+        }
+        div#contents{
+            background-color: white;
+        }
+        div#contents li{
+            list-style: none;
+            background-color: #066;
+            color:white;
+            border-radius: 5px;
+            margin: 1px;
+            padding: 3px;
+            word-break: break-all;
+        }
+        .full {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 1em;
+        }
+        div.button a{
+            display: block;
+            border-style: outset;
+            background-color: #dff;
+            border-radius: 1em;
+            width: 200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+    <h2>「inajob川」のご案内</h2>
+    <img class="full" src="imgs/cover.jpg" />
+    <div class="box">
+        inajob川は<a href="https://inajob.github.io/intro/index.html" target="_blank">inajob</a>を中心としたコミュニケーションをする場です。<br/>
+        電子工作を中心としたものづくり、子育て、30代後半、ポッドキャスト「#inajob の試しに録音してみた」の話などをしています。<br/>
+        （Discordを使っていますが音声通話などは今のところおこなわれていません）
+    </div>
+    <div class="box">
+        Discordサーバーは参加しないと内容が見られないので、中の雰囲気がわかりづらいです。<br/>
+        そこで、以下にinajob川の雑談部屋の最近の会話を公開しています。<br/>
+        この内容を見て「良さそう！」という方はぜひ参加してみてください。
+    </div>
+    <div class="full button"><a href="https://discord.gg/vHu4CXuMPq" target="_blank">Discordサーバー inajob川に参加する</a></div>
+    <h2>「inajob川」の様子</h2>
+    <div id="contents"></div>
+    <script>
+const url = "https://inline.inajob.freeddns.org/page/twitter-5643382/" + encodeURIComponent("inajob川の様子");
+console.log(url)
+fetch(url)
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    return response.json(); // JSONデータを期待する場合
+  })
+  .then(data => {
+    console.log(data);
+    let elm = document.getElementById("contents")
+    let lines = data.body.split(/\n/)
+    console.log(lines)
+    lines.forEach((l) => {
+        let li = document.createElement("li")
+        let t = document.createTextNode(l)
+        li.appendChild(t)
+        elm.appendChild(li)
+    })
+  })
+  .catch(error => {
+    console.error("Error:", error);
+  });
+
+    </script>
+</body>
+</html>
