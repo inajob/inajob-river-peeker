@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Discordサーバー「inajob川」の情報をストック化する</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta property="og:title" content="Discordサーバー「inajob川」の情報をストック化する">
+    <meta property="og:description" content="inajob川はinajobを中心としたコミュニケーションをする場です。">
+    <meta property="og:image" content="https://inajob.github.io/inajob-river-peeker/imgs/cover.jpg">
+    <meta property="og:url" content="https://inajob.github.io/inajob-river-peeker/index.html">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <style>
+        body{
+            background-color: #ddd;
+        }
+        pre{
+            line-height: 1.2em;
+        }
+        div.box {
+            background-color: #fff;
+            padding:1em;
+            margin:0.2em;
+            border-radius: 1em;
+        }
+        div#contents{
+            background-color: white;
+        }
+        div#contents li{
+            list-style: none;
+            background-color: #03f;
+            color:white;
+            border-radius: 5px;
+            margin: 1px;
+            padding: 3px;
+            word-break: break-all;
+        }
+        .full {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 1em;
+        }
+        div.button a{
+            display: block;
+            border-style: outset;
+            background-color: #dff;
+            border-radius: 1em;
+            width: 200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        @media (max-width: 768px) {
+            .img {
+                width: 100%;
+                text-align: center;
+                margin-bottom: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h2>Discordサーバー「inajob川」の情報をストック化する</h2>
+    <div class="box">
+        inajob川は<a href="https://inajob.github.io/intro/index.html" target="_blank">inajob</a>を中心としたコミュニケーションをする場です。<br/>
+        電子工作を中心としたものづくり、子育て、30代後半、ポッドキャスト「#inajob の試しに録音してみた」の話などをしています。<br/>
+        （Discordを使っていますが音声通話などは今のところおこなわれていません）
+    </div>
+    <div class="box">
+        このページはinajob川の雑談部屋で話された内容をLLMを使ってトピック別にまとめたものです。
+    </div>
+    <div class="full button"><a href="https://discord.gg/vHu4CXuMPq" target="_blank">Discordサーバー inajob川に参加する</a></div>
+    <h2>「inajob川」の雑談から生成したトピック</h2>
+    <div id="contents"></div>
+    <script>
+const url = "https://inline.inajob.freeddns.org/page/twitter-5643382/" + encodeURIComponent("inajob川の様子をWikiにしたもの");
+console.log(url)
+
+wiki = {}
+let elm = document.getElementById("contents")
+fetch(url)
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    return response.json(); // JSONデータを期待する場合
+  })
+  .then(data => {
+    console.log(data);
+    let lines = data.body.split(/\n/)
+    console.log(lines)
+    title = ""
+    body = ""
+    lines.forEach((l) => {
+        if(l == "==="){
+            wiki[title] = body
+            body = ""
+        }else if(l.indexOf("# ") == 0){
+            title = l.slice(2)
+        }else if(l == ""){
+            // skip
+        }else{
+            body = body + l + "\n"
+        }
+    })
+    console.log(wiki)
+    let titles = Object.keys(wiki)
+    titles.forEach((title) => {
+        let li = document.createElement("li")
+        let elmdiv = document.createElement("div")
+        let elmbody = document.createElement("pre")
+        let t = document.createTextNode(title)
+        let b = document.createTextNode(wiki[title])
+        let a = document.createElement("a")
+        li.appendChild(t)
+        a.appendChild(li)
+        a.href = "#" + title
+        a.name = title
+        elmbody.appendChild(b)
+        elmdiv.appendChild(a)
+        elmdiv.appendChild(elmbody)
+        elm.appendChild(elmdiv)
+    })
+  })
+  .catch(error => {
+    console.error("Error:", error);
+  });
+
+    </script>
+</body>
+</html>
