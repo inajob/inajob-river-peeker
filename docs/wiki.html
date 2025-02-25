@@ -26,15 +26,18 @@
         }
         div#contents{
             background-color: white;
+            font-size: small;
         }
-        div#contents li{
-            list-style: none;
-            background-color: #03f;
+        div#contents h2 {
+            background-color: #03a;
             color:white;
             border-radius: 5px;
             margin: 1px;
             padding: 3px;
             word-break: break-all;
+        }
+        div#contents ul{
+            margin: 2px;
         }
         .full {
             width: 100%;
@@ -76,6 +79,73 @@
 const url = "https://inline.inajob.freeddns.org/page/twitter-5643382/" + encodeURIComponent("inajob川の様子をWikiにしたもの");
 console.log(url)
 
+function convertUrlToLink(text) {
+  return text.replace(/\[(.*?)\]\((.*?)\)/g, function(match, title, url) {
+    return '<a href="' + url + '" target="_blank">' + title + '</a>';
+  }).replace(/\[(http.*?)\]/g, function(match, url) {
+    return '<a href="' + url + '" target="_blank">' + url + '</a>';
+  });
+}
+
+
+function markdownToHtml(markdown) {
+  const lines = markdown.split('\n');
+  let html = '';
+  const listStack = [];
+  let indentWidth = 0; // 最初のインデント幅を記憶
+
+  for (const line of lines) {
+    let indent = 0;
+    const trimmedLine = line.replace(/^\s*/, (match) => {
+      for (let i = 0; i < match.length; i++) {
+        if (match[i] === '\t') {
+          indent += 4;
+        } else if (match[i] === ' ') {
+          indent += 1;
+        }
+      }
+      return '';
+    });
+    const content = trimmedLine.trim();
+
+    if (content.startsWith('* ') || content.startsWith('- ') || content.startsWith('+ ')) {
+      const item = content.substring(2);
+
+      // 最初のインデント幅を検出
+      if (listStack.length === 0 && indent > 0) {
+        indentWidth = indent;
+      }
+
+      const listIndent = indentWidth > 0 ? Math.floor(indent / indentWidth) : indent > 0 ? 1 : 0;
+
+      while (listStack.length > 0 && listIndent <= listStack[listStack.length - 1].indent) {
+        html += '</ul>';
+        listStack.pop();
+      }
+
+      if (listStack.length === 0 || listIndent > listStack[listStack.length - 1].indent) {
+        html += '<ul>';
+        listStack.push({ indent: listIndent });
+      }
+
+      html += `<li>${convertUrlToLink(item)}</li>`;
+    } else {
+      while (listStack.length > 0) {
+        html += '</ul>';
+        listStack.pop();
+      }
+      html += `<p>${convertUrlToLink(content)}</p>`;
+    }
+  }
+
+  while (listStack.length > 0) {
+    html += '</ul>';
+    listStack.pop();
+  }
+
+  return html;
+}
+
 wiki = {}
 let elm = document.getElementById("contents")
 fetch(url)
@@ -106,17 +176,16 @@ fetch(url)
     console.log(wiki)
     let titles = Object.keys(wiki)
     titles.forEach((title) => {
-        let li = document.createElement("li")
+        let li = document.createElement("h2")
         let elmdiv = document.createElement("div")
-        let elmbody = document.createElement("pre")
+        let elmbody = document.createElement("div")
         let t = document.createTextNode(title)
-        let b = document.createTextNode(wiki[title])
         let a = document.createElement("a")
         li.appendChild(t)
         a.appendChild(li)
         a.href = "#" + title
         a.name = title
-        elmbody.appendChild(b)
+        elmbody.innerHTML = markdownToHtml(wiki[title])
         elmdiv.appendChild(a)
         elmdiv.appendChild(elmbody)
         elm.appendChild(elmdiv)
