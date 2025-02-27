@@ -74,6 +74,7 @@
     </div>
     <div class="full button"><a href="https://discord.gg/vHu4CXuMPq" target="_blank">Discordサーバー inajob川に参加する</a></div>
     <h2>「inajob川」の雑談から生成したトピック</h2>
+    <div id="list"><button onclick="showAll()">all</button></div>
     <div id="contents"></div>
     <script>
 const url = "https://inline.inajob.freeddns.org/page/twitter-5643382/" + encodeURIComponent("inajob川の様子をWikiにしたもの");
@@ -82,8 +83,12 @@ console.log(url)
 function convertUrlToLink(text) {
   return text.replace(/\[(.*?)\]\((.*?)\)/g, function(match, title, url) {
     return '<a href="' + url + '" target="_blank">' + title + '</a>';
-  }).replace(/\[(http.*?)\]/g, function(match, url) {
-    return '<a href="' + url + '" target="_blank">' + url + '</a>';
+  }).replace(/\[(.*?)\]/g, function(match, url) {
+    if(url.indexOf("http") == 0){
+        return '<a href="' + url + '" target="_blank">' + url + '</a>';
+    }else{
+        return '<a href="#'+encodeURIComponent(url)+'">' + url + '</a>'
+    }
   });
 }
 
@@ -146,7 +151,47 @@ function markdownToHtml(markdown) {
   return html;
 }
 
+
+function showAll(){
+    Object.keys(pageElements).forEach((k) => {
+        pageElements[k].style.display = "block"
+    })
+}
+
+function hidePage(){
+    Object.keys(pageElements).forEach((k) => {
+        pageElements[k].style.display = "none"
+    })
+}
+function showPage(title){
+    pageElements[title].style.display = "block"
+    console.log(title)
+}
+function showKeyword(keyword){
+    const elm = document.getElementById("list")
+    //elm.innerHTML = ""
+    const titles = Object.keys(wiki)
+    titles.forEach((t) => {
+        if(wiki[t].indexOf(keyword) != -1){
+            showPage(t)
+        }
+    })
+}
+window.addEventListener('hashchange', function() {
+  let key = decodeURIComponent(document.location.hash.slice(1))
+  
+  hidePage()
+  if(wiki[key]){
+    console.log("hit page" + key)
+    showPage(key)
+  }else{
+    console.log("hit keywodr" + key)
+    showKeyword(key)
+  }
+}, false);
+
 wiki = {}
+pageElements = {}
 let elm = document.getElementById("contents")
 fetch(url)
   .then(response => {
@@ -174,6 +219,7 @@ fetch(url)
         }
     })
     console.log(wiki)
+    
     let titles = Object.keys(wiki)
     titles.forEach((title) => {
         let li = document.createElement("h2")
@@ -189,6 +235,8 @@ fetch(url)
         elmdiv.appendChild(a)
         elmdiv.appendChild(elmbody)
         elm.appendChild(elmdiv)
+        elmdiv.style.display = "display"
+        pageElements[title] = elmdiv
     })
   })
   .catch(error => {
