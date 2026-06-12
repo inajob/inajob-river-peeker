@@ -1,247 +1,375 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Discordサーバー「inajob川」の情報をストック化する</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
-    <meta property="og:title" content="Discordサーバー「inajob川」の情報をストック化する">
-    <meta property="og:description" content="inajob川はinajobを中心としたコミュニケーションをする場です。">
-    <meta property="og:image" content="https://inajob.github.io/inajob-river-peeker/imgs/cover.jpg">
-    <meta property="og:url" content="https://inajob.github.io/inajob-river-peeker/index.html">
-    <meta property="og:type" content="website">
-    <meta name="twitter:card" content="summary_large_image">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discordサーバー「inajob川」の情報をストック化する</title>
     <style>
-        body{
-            background-color: #ddd;
+        :root {
+            --sidebar-bg: #f0f4f8;
+            --sidebar-border: #d1d9e6;
+            --accent-color: #5e5ce6;
+            --text-main: #2d3436;
+            --text-muted: #636e72;
+            --bg-main: #ffffff;
+            --bg-page: #f8f9fc;
+            --link-color: #0984e3;
+            --wiki-link-bg: #e3f2fd;
+            --header-gradient: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+            --header-height: 60px;
         }
-        pre{
-            line-height: 1.2em;
+
+        * {
+            box-sizing: border-box;
         }
-        div.box {
-            background-color: #fff;
-            padding:1em;
-            margin:0.2em;
-            border-radius: 1em;
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            color: var(--text-main);
+            line-height: 1.6;
+            background-color: var(--bg-page);
+            font-size: 14px;
+            height: 100vh;
+            overflow-x: hidden;
         }
-        div#contents{
-            background-color: white;
-            font-size: small;
+
+        #page-header {
+            min-height: var(--header-height);
+            height: auto;
+            background: var(--header-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 20px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 10px rgba(108, 92, 231, 0.2);
+            z-index: 100;
+            cursor: pointer;
         }
-        div#contents h2 {
-            background-color: #03a;
-            color:white;
-            border-radius: 5px;
-            margin: 1px;
-            padding: 3px;
-            word-break: break-all;
+
+        #page-header h1 {
+            margin: 0;
+            font-size: 1.1em;
+            color: white;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            line-height: 1.3;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            padding-right: 15px;
         }
-        div#contents ul{
-            margin: 2px;
+
+        .header-cta {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.9em;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.2s;
         }
-        .full {
+
+        .header-cta:hover {
+            background: white;
+            color: var(--accent-color);
+        }
+
+        #mobile-footer {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 12px 20px;
+            border-top: 1px solid var(--sidebar-border);
+            z-index: 200;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.05);
+        }
+
+        #app-container {
+            display: flex;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        #sidebar {
+            width: 280px;
+            flex-shrink: 0;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--sidebar-border);
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        #main-content {
+            flex-grow: 1;
+            padding: 24px 30px;
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: var(--bg-main);
+            overflow-y: auto;
             width: 100%;
-            text-align: center;
-            margin-bottom: 1em;
+            box-shadow: 0 0 20px rgba(0,0,0,0.03);
         }
-        div.button a{
+
+        #article-title { 
+            font-size: 1.6em; 
+            margin-top: 0; 
+            margin-bottom: 12px; 
+            font-weight: 700; 
+            color: var(--accent-color);
+            letter-spacing: -0.01em;
+            border-left: 4px solid var(--accent-color);
+            padding-left: 12px;
+            line-height: 1.2;
+        }
+
+        #article-body { 
+            white-space: pre-wrap; 
+            line-height: 1.8; 
+            font-size: 1.1em; 
+            color: #2d3436;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+
+        #article-source { 
+            font-size: 0.9em; 
+            color: #636e72; 
+            margin-top: 30px; 
+            padding: 8px 15px;
+            background-color: #dfe6e9;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 600;
+        }
+        
+        #sidebar-similar-articles h3 { 
+            font-size: 1.1em; 
+            margin-top: 0; 
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--sidebar-border);
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        #sidebar-similar-articles h3::before {
+            content: "💡";
+            margin-right: 10px;
+        }
+
+        #sidebar-similar-articles ul { 
+            padding: 0;
+            list-style: none;
+        }
+
+        #sidebar-similar-articles li { 
+            margin-bottom: 8px; 
+        }
+
+        #sidebar-similar-articles a { 
+            text-decoration: none; 
+            color: var(--text-main); 
             display: block;
-            border-style: outset;
-            background-color: #dff;
-            border-radius: 1em;
-            width: 200px;
-            margin-left: auto;
-            margin-right: auto;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: white;
+            border: 1px solid var(--sidebar-border);
+            border-bottom: 3px solid var(--sidebar-border);
+            transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+            font-weight: 600;
+            font-size: 0.9em;
         }
+
+        #sidebar-similar-articles a:hover { 
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .wiki-link { 
+            color: #d63031; 
+            text-decoration: none; 
+            padding: 2px 6px;
+            background-color: #fff5f5;
+            border-radius: 4px;
+            font-weight: 600;
+            border-bottom: 2px solid #fab1a0;
+            transition: all 0.2s;
+        }
+        .wiki-link:hover { 
+            background-color: #d63031;
+            color: white;
+            border-bottom-color: #d63031;
+        }
+
+        .welcome-card {
+            margin-top: 40px;
+            padding: 30px;
+            background: linear-gradient(to bottom right, #f0f3ff, #e6e9ff);
+            border-radius: 16px;
+            border: 1px solid var(--sidebar-border);
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        .welcome-card h3 {
+            margin-top: 0;
+            color: var(--accent-color);
+            font-size: 1.5em;
+        }
+
+        .cta-button {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 12px 28px;
+            background-color: var(--accent-color);
+            color: white !important;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(94, 92, 230, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(94, 92, 230, 0.4);
+            background-color: #4a48d1;
+        }
+
+        #all-titles h2 { 
+            font-size: 1.1em; 
+            margin-top: 0; 
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--sidebar-border);
+            padding-bottom: 8px;
+        }
+        #all-titles ul { list-style-type: none; padding: 0; }
+        #all-titles li { margin-bottom: 5px; }
+        #all-titles a { 
+            text-decoration: none; 
+            color: #4b4b4b; 
+            display: block;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: white;
+            border: 1px solid transparent;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: all 0.2s;
+        }
+        #all-titles a:hover { 
+            background-color: white;
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            transform: translateX(4px);
+            box-shadow: 2px 4px 8px rgba(0,0,0,0.05);
+        }
+
+        /* Mobile Adjustments */
         @media (max-width: 768px) {
-            .img {
-                width: 100%;
-                text-align: center;
-                margin-bottom: 1em;
+            body { height: auto; padding-bottom: 70px; }
+            #app-container { flex-direction: column; height: auto; overflow: visible; }
+            #sidebar {
+                width: 100%; height: auto; border-right: none;
+                border-top: 2px solid var(--sidebar-border);
+                padding: 20px; max-height: 400px; order: 2;
+                background-color: #edf2f7;
             }
+            #main-content { padding: 20px; overflow: visible; order: 1; box-shadow: none; }
+            #article-title { font-size: 1.8em; }
+            #article-body { font-size: 1em; }
+            .header-cta { display: none; }
+            #mobile-footer { display: block; }
+        }
+
+        #context-menu {
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ddd;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            padding: 6px;
+            z-index: 1000;
+            display: none;
+            border-radius: 8px;
+            min-width: 120px;
+        }
+        #context-menu button {
+            background: none;
+            border: none;
+            padding: 10px 16px;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 6px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+        }
+        #context-menu button::before {
+            content: "🔍";
+            margin-right: 8px;
+        }
+        #context-menu button:hover {
+            background-color: var(--wiki-link-bg);
+            color: var(--accent-color);
         }
     </style>
 </head>
 <body>
-    <h2>Discordサーバー「inajob川」の情報をストック化する</h2>
-    <div class="box">
-        inajob川は<a href="https://inajob.github.io/intro/index.html" target="_blank">inajob</a>を中心としたコミュニケーションをする場です。<br/>
-        電子工作を中心としたものづくり、子育て、30代後半、ポッドキャスト「#inajob の試しに録音してみた」の話などをしています。<br/>
-        （Discordを使っていますが音声通話などは今のところおこなわれていません）
+    <header id="page-header">
+        <h1>Discordサーバー「inajob川」の情報をストック化する</h1>
+        <a href="https://discord.gg/9mUunmS" target="_blank" class="header-cta">Discordに参加</a>
+    </header>
+    <div id="app-container">
+        <div id="sidebar">
+            <div id="sidebar-all-articles">
+                <h2>All Articles</h2>
+                <div id="all-titles">
+                    <ul>
+                        <!-- All titles will be loaded here by JavaScript -->
+                    </ul>
+                </div>
+            </div>
+            <div id="sidebar-similar-articles" style="display: none;">
+                <h3>Similar Articles</h3>
+                <ul class="similar-list">
+                    <!-- Similar articles will be loaded here by JavaScript -->
+                </ul>
+            </div>
+        </div>
+        <div id="main-content">
+            <h1 id="article-title">Loading...</h1>
+            <div id="article-body"></div>
+            <div id="article-source"></div>
+        </div>
     </div>
-    <div class="box">
-        このページはinajob川の雑談部屋で話された内容をLLMを使ってトピック別にまとめたものです。
+
+    <footer id="mobile-footer">
+        <a href="https://discord.gg/9mUunmS" target="_blank" class="cta-button" style="margin-top: 0; width: 100%;">Discordサーバーに参加する</a>
+    </footer>
+
+    <div id="context-menu">
+        <button id="context-menu-search">Search</button>
     </div>
-    <div class="full button"><a href="https://discord.gg/vHu4CXuMPq" target="_blank">Discordサーバー inajob川に参加する</a></div>
-    <h2>「inajob川」の雑談から生成したトピック</h2>
-    <div id="list"><button onclick="showAll()">all</button></div>
-    <div id="contents"></div>
-    <script>
-const url = "https://better-magenta-vole.myfilebase.com/ipfs/QmY5fAwNkKswLRqmYxkSgVJxW75fEnMCZ4ZWKkSAWSoaUE";
 
-function convertUrlToLink(text) {
-  return text.replace(/\[(.*?)\]\((.*?)\)/g, function(match, title, url) {
-    return '<a href="' + url + '" target="_blank">' + title + '</a>';
-  }).replace(/\[(.*?)\]/g, function(match, url) {
-    if(url.indexOf("http") == 0){
-        return '<a href="' + url + '" target="_blank">' + url + '</a>';
-    }else{
-        return '<a href="#'+encodeURIComponent(url)+'">' + url + '</a>'
-    }
-  });
-}
-
-
-function markdownToHtml(markdown) {
-  const lines = markdown.split('\n');
-  let html = '';
-  const listStack = [];
-  let indentWidth = 0; // 最初のインデント幅を記憶
-
-  for (const line of lines) {
-    let indent = 0;
-    const trimmedLine = line.replace(/^\s*/, (match) => {
-      for (let i = 0; i < match.length; i++) {
-        if (match[i] === '\t') {
-          indent += 4;
-        } else if (match[i] === ' ') {
-          indent += 1;
-        }
-      }
-      return '';
-    });
-    const content = trimmedLine.trim();
-
-    if (content.startsWith('* ') || content.startsWith('- ') || content.startsWith('+ ')) {
-      const item = content.substring(2);
-
-      // 最初のインデント幅を検出
-      if (listStack.length === 0 && indent > 0) {
-        indentWidth = indent;
-      }
-
-      const listIndent = indentWidth > 0 ? Math.floor(indent / indentWidth) : indent > 0 ? 1 : 0;
-
-      while (listStack.length > 0 && listIndent <= listStack[listStack.length - 1].indent) {
-        html += '</ul>';
-        listStack.pop();
-      }
-
-      if (listStack.length === 0 || listIndent > listStack[listStack.length - 1].indent) {
-        html += '<ul>';
-        listStack.push({ indent: listIndent });
-      }
-
-      html += `<li>${convertUrlToLink(item)}</li>`;
-    } else {
-      while (listStack.length > 0) {
-        html += '</ul>';
-        listStack.pop();
-      }
-      html += `<p>${convertUrlToLink(content)}</p>`;
-    }
-  }
-
-  while (listStack.length > 0) {
-    html += '</ul>';
-    listStack.pop();
-  }
-
-  return html;
-}
-
-
-function showAll(){
-    Object.keys(pageElements).forEach((k) => {
-        pageElements[k].style.display = "block"
-    })
-}
-
-function hidePage(){
-    Object.keys(pageElements).forEach((k) => {
-        pageElements[k].style.display = "none"
-    })
-}
-function showPage(title){
-    pageElements[title].style.display = "block"
-    console.log(title)
-}
-function showKeyword(keyword){
-    const elm = document.getElementById("list")
-    //elm.innerHTML = ""
-    const titles = Object.keys(wiki)
-    titles.forEach((t) => {
-        if(wiki[t].indexOf(keyword) != -1){
-            showPage(t)
-        }
-    })
-}
-window.addEventListener('hashchange', function() {
-  let key = decodeURIComponent(document.location.hash.slice(1))
-  
-  hidePage()
-  if(wiki[key]){
-    console.log("hit page" + key)
-    showPage(key)
-  }else{
-    console.log("hit keywodr" + key)
-    showKeyword(key)
-  }
-}, false);
-
-wiki = {}
-pageElements = {}
-let elm = document.getElementById("contents")
-fetch(url)
-  .then(response => {
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    return response.text();
-  })
-  .then(data => {
-    console.log(data);
-    let lines = data.split(/[\n\r]+/)
-    console.log(lines)
-    title = ""
-    body = ""
-    lines.forEach((l) => {
-        if(l == "==="){
-            wiki[title] = body
-            body = ""
-        }else if(l.indexOf("# ") == 0){
-            title = l.slice(2)
-        }else if(l == ""){
-            // skip
-        }else{
-            body = body + l + "\n"
-        }
-    })
-    console.log(wiki)
-    
-    let titles = Object.keys(wiki)
-    titles.forEach((title) => {
-        let li = document.createElement("h2")
-        let elmdiv = document.createElement("div")
-        let elmbody = document.createElement("div")
-        let t = document.createTextNode(title)
-        let a = document.createElement("a")
-        li.appendChild(t)
-        a.appendChild(li)
-        a.href = "#" + title
-        a.name = title
-        elmbody.innerHTML = markdownToHtml(wiki[title])
-        elmdiv.appendChild(a)
-        elmdiv.appendChild(elmbody)
-        elm.appendChild(elmdiv)
-        elmdiv.style.display = "display"
-        pageElements[title] = elmdiv
-    })
-  })
-  .catch(error => {
-    console.error("Error:", error);
-  });
-
-    </script>
+    <script src="viewer.js"></script>
 </body>
 </html>
